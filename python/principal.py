@@ -58,7 +58,6 @@ def report02_Adquicision(analytics):
 
   response = report02.reporte(analytics)
   datos  = report02.respuesta(response)
-  print(datos);
   report02.guardar(datos)
   report02.actualizarFecha();
 
