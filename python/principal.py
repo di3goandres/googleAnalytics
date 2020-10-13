@@ -6,6 +6,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 import report01;
 import report02;
+import report03;
+import report04;
+
+
 
 
 
@@ -61,12 +65,29 @@ def report02_Adquicision(analytics):
   report02.guardar(datos)
   report02.actualizarFecha();
 
+def report03_OrganicSerches(analytics):
+    
+  response = report03.reporte(analytics)
+  datos  = report03.respuesta(response)
+  report03.guardar(datos)
+  report03.actualizarFecha();
+
+
+def report04_Traffic(analytics):
+    
+  response = report04.reporte(analytics)
+  datos  = report04.respuesta(response)
+  report04.guardar(datos)
+  report04.actualizarFecha();
+
 
 
 def main():
   analytics = initialize_analyticsreporting()
   report_audience_01(analytics)
   report02_Adquicision(analytics)
+  report03_OrganicSerches(analytics)
+  report04_Traffic(analytics)
 
 
   

@@ -1,3 +1,4 @@
+
 import pyodbc
 import config
 
@@ -26,36 +27,37 @@ def guardar(info):
         date_time_obj = datetime.datetime.strptime(
             analytics['ga:date'], '%Y%m%d')
         pdate = date_time_obj.strftime('%Y-%m-%d')
-        channel = analytics['ga:channelGrouping']
-        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_Acquisition WHERE fecha ='" + pdate + "' "  +
-                " and channelGrouping = '" + channel +"'  ) BEGIN " +
+        keyword = analytics['ga:keyword']
+        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_OrganicSearches WHERE fecha ='" + pdate + "' " +
+                 " and keyword = '" + keyword + "'  ) BEGIN " +
 
-                 "INSERT INTO ga_indicador_Acquisition ([fecha] " +
+                 "INSERT INTO ga_indicador_OrganicSearches ([fecha] " +
                  ",[newUsers]" +
-                 ",[channelGrouping]" +
-
-
+                 ",[keyword]" +
+                 ",[organicSearches]" +
                  ",[users]" +
                  ",[sessions]" +
                  ",[fecha_creacion], fecha_actualizacion )" +
                  "values ('"+pdate +
                  "', "+analytics['ga:newUsers'] +
+                 ",'"+analytics['ga:keyword'] +
 
-                 ",'"+analytics['ga:channelGrouping'] +
+                 "',"+analytics['ga:organicSearches'] +
 
-                 "', "+analytics['ga:users'] +
+                 ", "+analytics['ga:users'] +
                  ", " + analytics['ga:sessions'] +
                  ", getdate(), getdate()) END " +
                  "ELSE " +
                  "BEGIN " +
-
-                 "update  [dbo].ga_indicador_Acquisition " +
+                 "update  [dbo].ga_indicador_OrganicSearches " +
                  "set users = "+analytics['ga:users'] +
                  ",sessions = " + analytics['ga:sessions'] +
+                 ",newUsers = " + analytics['ga:newUsers'] +
+                 ",organicSearches = " + analytics['ga:organicSearches'] +
                  ",fecha_actualizacion = getdate() "
                  " where fecha = '" + pdate + "' "
-                  " and channelGrouping = '" + channel +"'   END")
-       # print(QUERY)
+                 " and keyword = '" + keyword + "'   END")
+        # print(QUERY)
         cursor.execute(QUERY)
         conn.commit()
     print('fin', datetime.datetime.now())
@@ -111,11 +113,11 @@ def reporte(analytics):
                         {'expression': 'ga:sessions'},
                         {'expression': 'ga:newUsers'},
                         {'expression': 'ga:users'},
-
+                        {'expression': 'ga:organicSearches'},
                     ],
                     'dimensions': [
                         {'name': "ga:date"},
-                        {'name': "ga:channelGrouping"}
+                        {'name': "ga:keyword"}
 
                     ]
                 }]
@@ -128,7 +130,7 @@ def reporte(analytics):
 def getFechaInicio():
 
     cursor.execute(
-        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_Acquisition'")
+        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_OrganicSearches'")
     for row in cursor.fetchall():
         fechainicio = row[0]
 
@@ -140,6 +142,6 @@ def getFechaInicio():
 def actualizarFecha():
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     QUERY = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" +
-             pdate + "'  where tabla = 'ga_indicador_Acquisition'")
+             pdate + "'  where tabla = 'ga_indicador_OrganicSearches'")
     cursor.execute(QUERY)
     cursor.commit()

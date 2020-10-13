@@ -1,3 +1,4 @@
+
 import pyodbc
 import config
 
@@ -26,36 +27,41 @@ def guardar(info):
         date_time_obj = datetime.datetime.strptime(
             analytics['ga:date'], '%Y%m%d')
         pdate = date_time_obj.strftime('%Y-%m-%d')
-        channel = analytics['ga:channelGrouping']
-        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_Acquisition WHERE fecha ='" + pdate + "' "  +
-                " and channelGrouping = '" + channel +"'  ) BEGIN " +
+        keyword = analytics['ga:fullReferrer']
+        keyword2 = analytics['ga:referralPath']
 
-                 "INSERT INTO ga_indicador_Acquisition ([fecha] " +
+        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_AllTrafficReferrals WHERE fecha ='" + pdate + "' " +
+                 " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "') BEGIN " +
+
+                 "INSERT INTO ga_indicador_AllTrafficReferrals ([fecha] " +
                  ",[newUsers]" +
-                 ",[channelGrouping]" +
-
+                 ",[fullReferrer]" +
+                 ",[referralPath]" +
+                 ",[medium]" +
 
                  ",[users]" +
                  ",[sessions]" +
                  ",[fecha_creacion], fecha_actualizacion )" +
                  "values ('"+pdate +
                  "', "+analytics['ga:newUsers'] +
-
-                 ",'"+analytics['ga:channelGrouping'] +
+                 ",'"+analytics['ga:fullReferrer'] +
+                 "','"+analytics['ga:referralPath'] +
+                 "','"+analytics['ga:medium'] +
 
                  "', "+analytics['ga:users'] +
                  ", " + analytics['ga:sessions'] +
                  ", getdate(), getdate()) END " +
                  "ELSE " +
                  "BEGIN " +
-
-                 "update  [dbo].ga_indicador_Acquisition " +
+                 "update  [dbo].ga_indicador_AllTrafficReferrals " +
                  "set users = "+analytics['ga:users'] +
                  ",sessions = " + analytics['ga:sessions'] +
+                 ",newUsers = " + analytics['ga:newUsers'] +
                  ",fecha_actualizacion = getdate() "
                  " where fecha = '" + pdate + "' "
-                  " and channelGrouping = '" + channel +"'   END")
-       # print(QUERY)
+                 " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "' END")
+
+        #print(QUERY)
         cursor.execute(QUERY)
         conn.commit()
     print('fin', datetime.datetime.now())
@@ -111,11 +117,13 @@ def reporte(analytics):
                         {'expression': 'ga:sessions'},
                         {'expression': 'ga:newUsers'},
                         {'expression': 'ga:users'},
-
                     ],
                     'dimensions': [
                         {'name': "ga:date"},
-                        {'name': "ga:channelGrouping"}
+                        {'name': "ga:medium"},
+                        {'name': "ga:fullReferrer"},
+                        {'name': "ga:referralPath"}
+
 
                     ]
                 }]
@@ -128,7 +136,7 @@ def reporte(analytics):
 def getFechaInicio():
 
     cursor.execute(
-        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_Acquisition'")
+        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_AllTrafficReferrals'")
     for row in cursor.fetchall():
         fechainicio = row[0]
 
@@ -140,6 +148,6 @@ def getFechaInicio():
 def actualizarFecha():
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     QUERY = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" +
-             pdate + "'  where tabla = 'ga_indicador_Acquisition'")
+             pdate + "'  where tabla = 'ga_indicador_AllTrafficReferrals'")
     cursor.execute(QUERY)
     cursor.commit()
