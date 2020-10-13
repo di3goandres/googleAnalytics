@@ -24,28 +24,38 @@ def guardar(info):
     for analytics in info:
 
         date_time_obj = datetime.datetime.strptime(
-            analytics['fecha'], '%Y%m%d')
+            analytics['ga:date'], '%Y%m%d')
         pdate = date_time_obj.strftime('%Y-%m-%d')
+        channel = analytics['ga:channelGrouping']
+        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_Acquisition WHERE fecha ='" + pdate + "' "  +
+                " and channelGrouping = '" + channel +"'  ) BEGIN " +
 
-        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_Audience WHERE fecha ='" + pdate + "') BEGIN " +
+                 "INSERT INTO ga_indicador_Acquisition ([fecha] " +
+                 ",[newUsers]" +
+                 ",[channelGrouping]" +
 
-                 "INSERT INTO ga_indicador_Audience ([fecha] " +
+
                  ",[users]" +
                  ",[sessions]" +
                  ",[fecha_creacion], fecha_actualizacion )" +
                  "values ('"+pdate +
+                 "', "+analytics['ga:newUsers'] +
+
+                 ",' "+analytics['ga:channelGrouping'] +
+
                  "', "+analytics['ga:users'] +
                  ", " + analytics['ga:sessions'] +
                  ", getdate(), getdate()) END " +
                  "ELSE " +
                  "BEGIN " +
 
-                 "update  [dbo].ga_indicador_Audience " +
+                 "update  [dbo].ga_indicador_Acquisition " +
                  "set users = "+analytics['ga:users'] +
                  ",sessions = " + analytics['ga:sessions'] +
                  ",fecha_actualizacion = getdate() "
-                 " where fecha = '" + pdate + "'   END")
-
+                 " where fecha = '" + pdate + "' "
+                  " and channelGrouping = '" + channel +"'   END")
+       # print(QUERY)
         cursor.execute(QUERY)
         conn.commit()
     print('fin', datetime.datetime.now())
@@ -72,7 +82,7 @@ def respuesta(response):
             dateRangeValues = row.get('metrics', [])
             pipeline_insert = {}
             for header, dimension in zip(dimensionHeaders, dimensions):
-                pipeline_insert['fecha'] = dimension
+                pipeline_insert[header] = dimension
 
             for i, values in enumerate(dateRangeValues):
 
@@ -83,14 +93,7 @@ def respuesta(response):
         return return_data
 
 
-def get_ga_indicador_Audience(analytics):
-    """Queries the Analytics Reporting API V4.
-
-    Args:
-    analytics: An authorized Analytics Reporting API V4 service object.
-    Returns:
-    The Analytics Reporting API V4 response.
-    """
+def reporte(analytics):
     fecha = getFechaInicio()
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     if(fecha == pdate):
@@ -106,10 +109,15 @@ def get_ga_indicador_Audience(analytics):
                     'dateRanges': [{'startDate': fecha, 'endDate': fin}],
                     'metrics': [
                         {'expression': 'ga:sessions'},
+                        {'expression': 'ga:newUsers'},
                         {'expression': 'ga:users'},
 
                     ],
-                    'dimensions': [{'name': "ga:date"}]
+                    'dimensions': [
+                        {'name': "ga:date"},
+                        {'name': "ga:channelGrouping"}
+
+                    ]
                 }]
         }
     ).execute()
@@ -120,7 +128,7 @@ def get_ga_indicador_Audience(analytics):
 def getFechaInicio():
 
     cursor.execute(
-        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_Audience'")
+        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_Acquisition'")
     for row in cursor.fetchall():
         fechainicio = row[0]
 
@@ -132,6 +140,6 @@ def getFechaInicio():
 def actualizarFecha():
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     QUERY = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" +
-             pdate + "'  where tabla = 'ga_indicador_Audience'")
+             pdate + "'  where tabla = 'ga_indicador_Acquisition'")
     cursor.execute(QUERY)
     cursor.commit()

@@ -5,6 +5,8 @@ from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 import report01;
+import report02;
+
 
 
 
@@ -36,57 +38,45 @@ def initialize_analyticsreporting():
 
   return analytics
 
-# metodo para obtener la fecha de inicio
-def getFechaInicio():
- 
-  cursor.execute("SELECT ga_parametros.fecha_inicio FROM ga_parametros")
-  for row in cursor.fetchall():
-    fechainicio = row[0];
 
   
-  return fechainicio;
-  
-
-
-# metodo para actualizar la utlima fecha
-def actualizarFecha():     
-  pdate = datetime.datetime.now().strftime('%Y-%m-%d')
-  QUERY  = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" + pdate +"'") 
-  cursor.execute(QUERY)
-  cursor.commit()
 
 
 
 
 
-def report_audience_01(analytics, fecha, end):
-  response = report01.get_ga_indicador_Audience(analytics, fecha, end)
+
+def report_audience_01(analytics):
+  response = report01.get_ga_indicador_Audience(analytics)
   datos  = report01.respuesta(response)
   report01.guardar(datos)
+  report01.actualizarFecha();
+
 
  
+def report02_Adquicision(analytics):
+
+  response = report02.reporte(analytics)
+  datos  = report02.respuesta(response)
+  print(datos);
+  report02.guardar(datos)
+  report02.actualizarFecha();
 
 
 
 def main():
-  
-  fecha= getFechaInicio()
-  pdate = datetime.datetime.now().strftime('%Y-%m-%d')  
   analytics = initialize_analyticsreporting()
+  report_audience_01(analytics)
+  report02_Adquicision(analytics)
 
-  if(fecha == pdate):
-    print('iguales')
-    endDate = fecha
-    print('iguales', endDate)
-    report_audience_01(analytics, fecha, fecha)
-  else:
-     report_audience_01(analytics, fecha, 'yesterday')
+
+  
         
         
 
   
   #se obtiene el primer reporte y se guarda en base de datos
-  actualizarFecha()
+  # ()
 
 if __name__ == '__main__':
   main()
