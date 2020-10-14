@@ -1,3 +1,4 @@
+
 import pyodbc
 import config
 
@@ -20,41 +21,38 @@ VIEW_ID = config.VIEW_ID
 
 
 def guardar(info):
+  
     print('inicio', datetime.datetime.now(), 'Total: ', len(info))
     for analytics in info:
 
         date_time_obj = datetime.datetime.strptime(
-            analytics['fecha'], '%Y%m%d')
+            analytics['ga:date'], '%Y%m%d')
         pdate = date_time_obj.strftime('%Y-%m-%d')
+      
 
-        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_Audience WHERE fecha ='" + pdate + "') BEGIN " +
+        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_Pages WHERE fecha ='" + pdate + "' ) BEGIN " +
+                 
 
-                 "INSERT INTO ga_indicador_Audience ([fecha] " +
-                 ",[users]" +
-                 ",[sessions]" +
-                 ",[newUsers]" +
-                 ",[bounceRate]" +
+                 "INSERT INTO ga_indicador_Pages ([fecha] " +
+                 ",[avgPageLoadTime]" +
+                 ",[PageLoadTime]" +
+                 ",[avgPageDownloadTime]" +
                  ",[fecha_creacion], fecha_actualizacion )" +
                  "values ('"+pdate +
-                 "',"+analytics['ga:users'] +
-                 ","+analytics['ga:sessions'] +
-                 ","+analytics['ga:newUsers'] +
-                 ","+analytics['ga:bounceRate'] +
-
-
+                 "', "+analytics['ga:avgPageLoadTime'] +
+                 ","+analytics['ga:pageLoadTime'] +
+                 ","+analytics['ga:avgPageDownloadTime'] +
                  ", getdate(), getdate()) END " +
                  "ELSE " +
                  "BEGIN " +
-
-                 "update  [dbo].ga_indicador_Audience " +
-                 "set users = "+analytics['ga:users'] +
-                 ",sessions = " + analytics['ga:sessions'] +
-                 ",bounceRate = " + analytics['ga:bounceRate'] +
-                 ",newUsers = " + analytics['ga:newUsers'] +
+                 "update  [dbo].ga_indicador_Pages " +
+                 "set avgPageLoadTime = "+analytics['ga:avgPageLoadTime'] +
+                 ",PageLoadTime = " + analytics['ga:pageLoadTime'] +
+                 ",avgPageDownloadTime = " + analytics['ga:avgPageDownloadTime'] +
                  ",fecha_actualizacion = getdate() "
-                 " where fecha = '" + pdate + "'   END")
+                 " where fecha = '" + pdate + "' END ")
 
-        # print(QUERY)
+        
         cursor.execute(QUERY)
         conn.commit()
     print('fin', datetime.datetime.now())
@@ -81,7 +79,7 @@ def respuesta(response):
             dateRangeValues = row.get('metrics', [])
             pipeline_insert = {}
             for header, dimension in zip(dimensionHeaders, dimensions):
-                pipeline_insert['fecha'] = dimension
+                pipeline_insert[header] = dimension
 
             for i, values in enumerate(dateRangeValues):
 
@@ -92,14 +90,7 @@ def respuesta(response):
         return return_data
 
 
-def get_ga_indicador_Audience(analytics):
-    """Queries the Analytics Reporting API V4.
-
-    Args:
-    analytics: An authorized Analytics Reporting API V4 service object.
-    Returns:
-    The Analytics Reporting API V4 response.
-    """
+def reporte(analytics):
     fecha = getFechaInicio()
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     if(fecha == pdate):
@@ -114,12 +105,13 @@ def get_ga_indicador_Audience(analytics):
                     'viewId': VIEW_ID,
                     'dateRanges': [{'startDate': fecha, 'endDate': fin}],
                     'metrics': [
-                        {'expression': 'ga:sessions'},
-                        {'expression': 'ga:users'},
-                        {'expression': 'ga:newUsers'},
-                        {'expression': 'ga:bounceRate'},
+                        {'expression': 'ga:avgPageLoadTime'},
+                        {'expression': 'ga:pageLoadTime'},
+                        {'expression': 'ga:avgPageDownloadTime'},
                     ],
-                    'dimensions': [{'name': "ga:date"}]
+                    'dimensions': [
+                        {'name': "ga:date"}
+                    ]
                 }]
         }
     ).execute()
@@ -130,7 +122,7 @@ def get_ga_indicador_Audience(analytics):
 def getFechaInicio():
 
     cursor.execute(
-        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_Audience'")
+        "SELECT ga_parametros.fecha_inicio FROM ga_parametros where tabla = 'ga_indicador_Pages'")
     for row in cursor.fetchall():
         fechainicio = row[0]
 
@@ -142,6 +134,6 @@ def getFechaInicio():
 def actualizarFecha():
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     QUERY = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" +
-             pdate + "'  where tabla = 'ga_indicador_Audience'")
+             pdate + "'  where tabla = 'ga_indicador_Pages'")
     cursor.execute(QUERY)
     cursor.commit()

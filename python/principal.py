@@ -8,7 +8,7 @@ import report01;
 import report02;
 import report03;
 import report04;
-
+import report05;
 
 
 
@@ -43,13 +43,6 @@ def initialize_analyticsreporting():
   return analytics
 
 
-  
-
-
-
-
-
-
 def report_audience_01(analytics):
   response = report01.get_ga_indicador_Audience(analytics)
   datos  = report01.respuesta(response)
@@ -80,6 +73,13 @@ def report04_Traffic(analytics):
   report04.guardar(datos)
   report04.actualizarFecha();
 
+def report05_Pages(analytics):
+    
+  response = report05.reporte(analytics)
+  datos  = report05.respuesta(response)
+  report05.guardar(datos)
+  report05.actualizarFecha();
+
 
 
 def main():
@@ -88,12 +88,8 @@ def main():
   report02_Adquicision(analytics)
   report03_OrganicSerches(analytics)
   report04_Traffic(analytics)
-
-
-  
-        
-        
-
+  report05_Pages(analytics)
+                
   
   #se obtiene el primer reporte y se guarda en base de datos
   # ()
