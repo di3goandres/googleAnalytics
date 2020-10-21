@@ -4,6 +4,8 @@ import config
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import datetime
+from datetime import timedelta
+
 
 
 endDate = "yesterday"
@@ -141,7 +143,12 @@ def getFechaInicio():
 
 
 def actualizarFecha(fecha):
-    pdate = datetime.datetime.now().strftime('%Y-%m-%d')
+    new_date = datetime.datetime.today() + timedelta(-1)
+    new_date = new_date.strftime('%Y-%m-%d')
+    if fecha == new_date:
+      pdate = datetime.datetime.now().strftime('%Y-%m-%d')
+      fecha = pdate;
+
     QUERY = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" +
              fecha + "'  where tabla = 'ga_indicador_Acquisition'")
     cursor.execute(QUERY)
