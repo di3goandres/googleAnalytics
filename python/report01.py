@@ -7,7 +7,7 @@ import datetime
 
 
 endDate = "yesterday"
-
+fechaGuardar = ''
 server = config.server
 database = config.database
 username = config.username
@@ -26,6 +26,7 @@ def guardar(info):
         date_time_obj = datetime.datetime.strptime(
             analytics['fecha'], '%Y%m%d')
         pdate = date_time_obj.strftime('%Y-%m-%d')
+        fechaGuardar = pdate;
 
         QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_Audience WHERE fecha ='" + pdate + "') BEGIN " +
 
@@ -58,6 +59,7 @@ def guardar(info):
         cursor.execute(QUERY)
         conn.commit()
     print('fin', datetime.datetime.now())
+    actualizarFecha(fechaGuardar);
 
 
 def respuesta(response):
@@ -139,9 +141,9 @@ def getFechaInicio():
     # metodo para actualizar la utlima fecha
 
 
-def actualizarFecha():
+def actualizarFecha(fecha):
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     QUERY = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" +
-             pdate + "'  where tabla = 'ga_indicador_Audience'")
+             fecha + "'  where tabla = 'ga_indicador_Audience'")
     cursor.execute(QUERY)
     cursor.commit()

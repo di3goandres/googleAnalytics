@@ -8,6 +8,7 @@ import datetime
 
 
 endDate = "yesterday"
+fechaGuardar = ''
 
 server = config.server
 database = config.database
@@ -27,6 +28,8 @@ def guardar(info):
         date_time_obj = datetime.datetime.strptime(
             analytics['ga:date'], '%Y%m%d')
         pdate = date_time_obj.strftime('%Y-%m-%d')
+        fechaGuardar = pdate;
+
         keyword = analytics['ga:fullReferrer']
         keyword2 = analytics['ga:referralPath']
 
@@ -36,8 +39,11 @@ def guardar(info):
                  "INSERT INTO ga_indicador_AllTrafficReferrals ([fecha] " +
                  ",[newUsers]" +
                  ",[fullReferrer]" +
+                 ",[pageviews]" +
+
                  ",[referralPath]" +
                  ",[medium]" +
+                 ",[country]" +
 
                  ",[users]" +
                  ",[sessions]" +
@@ -45,8 +51,11 @@ def guardar(info):
                  "values ('"+pdate +
                  "', "+analytics['ga:newUsers'] +
                  ",'"+analytics['ga:fullReferrer'] +
-                 "','"+analytics['ga:referralPath'] +
+                 "',"+analytics['ga:pageviews'] +
+
+                 ",'"+analytics['ga:referralPath'] +
                  "','"+analytics['ga:medium'] +
+                 "','"+analytics['ga:country'] +
 
                  "', "+analytics['ga:users'] +
                  ", " + analytics['ga:sessions'] +
@@ -57,14 +66,20 @@ def guardar(info):
                  "set users = "+analytics['ga:users'] +
                  ",sessions = " + analytics['ga:sessions'] +
                  ",newUsers = " + analytics['ga:newUsers'] +
-                 ",fecha_actualizacion = getdate() "
+                 ",pageviews = " + analytics['ga:pageviews'] +
+                 ",country = '" + analytics['ga:country'] +
+
+                 "',fecha_actualizacion = getdate() "
                  " where fecha = '" + pdate + "' "
                  " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "' END")
 
-        #print(QUERY)
+        
+        # print(QUERY)
         cursor.execute(QUERY)
         conn.commit()
     print('fin', datetime.datetime.now())
+    actualizarFecha(fechaGuardar);
+
 
 
 def respuesta(response):
@@ -117,12 +132,17 @@ def reporte(analytics):
                         {'expression': 'ga:sessions'},
                         {'expression': 'ga:newUsers'},
                         {'expression': 'ga:users'},
+                        {'expression': 'ga:pageviews'},
+
                     ],
                     'dimensions': [
                         {'name': "ga:date"},
                         {'name': "ga:medium"},
                         {'name': "ga:fullReferrer"},
-                        {'name': "ga:referralPath"}
+                        {'name': "ga:referralPath"},
+                        {'name': "ga:country"},
+                   
+
 
 
                     ]
@@ -145,9 +165,9 @@ def getFechaInicio():
     # metodo para actualizar la utlima fecha
 
 
-def actualizarFecha():
+def actualizarFecha(fecha):
     pdate = datetime.datetime.now().strftime('%Y-%m-%d')
     QUERY = ("UPDATE [dbo].[ga_parametros]  SET [fecha_inicio]='" +
-             pdate + "'  where tabla = 'ga_indicador_AllTrafficReferrals'")
+             fecha + "'  where tabla = 'ga_indicador_AllTrafficReferrals'")
     cursor.execute(QUERY)
     cursor.commit()

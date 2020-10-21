@@ -8,7 +8,7 @@ import report01;
 import report02;
 import report03;
 import report04;
-import report05;
+import report06;
 
 
 
@@ -43,11 +43,10 @@ def initialize_analyticsreporting():
   return analytics
 
 
-def report_audience_01(analytics):
+def report_audience_01_05(analytics):
   response = report01.get_ga_indicador_Audience(analytics)
   datos  = report01.respuesta(response)
   report01.guardar(datos)
-  report01.actualizarFecha();
 
 
  
@@ -56,14 +55,14 @@ def report02_Adquicision(analytics):
   response = report02.reporte(analytics)
   datos  = report02.respuesta(response)
   report02.guardar(datos)
-  report02.actualizarFecha();
+
 
 def report03_OrganicSerches(analytics):
     
   response = report03.reporte(analytics)
   datos  = report03.respuesta(response)
   report03.guardar(datos)
-  report03.actualizarFecha();
+
 
 
 def report04_Traffic(analytics):
@@ -71,24 +70,43 @@ def report04_Traffic(analytics):
   response = report04.reporte(analytics)
   datos  = report04.respuesta(response)
   report04.guardar(datos)
-  report04.actualizarFecha();
 
-def report05_Pages(analytics):
+
+def report06_Pages(analytics):
     
-  response = report05.reporte(analytics)
-  datos  = report05.respuesta(response)
-  report05.guardar(datos)
-  report05.actualizarFecha();
+  response = report06.reporte(analytics)
+  datos  = report06.respuesta(response)
+  report06.guardar(datos)
+
 
 
 
 def main():
   analytics = initialize_analyticsreporting()
-  report_audience_01(analytics)
-  report02_Adquicision(analytics)
-  report03_OrganicSerches(analytics)
-  report04_Traffic(analytics)
-  report05_Pages(analytics)
+  try:
+     report_audience_01_05(analytics)
+  except:
+    print("error")
+  try:
+    report02_Adquicision(analytics)
+  except:
+    print("error")
+  try:
+    report03_OrganicSerches(analytics)
+  except:
+    print("error")
+  try:
+    report04_Traffic(analytics)
+  except:
+    print("error")
+  try:
+    report06_Pages(analytics)
+  except:
+    print("error")
+ 
+ 
+
+
                 
   
   #se obtiene el primer reporte y se guarda en base de datos
