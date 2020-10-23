@@ -22,10 +22,14 @@ VIEW_ID = config.VIEW_ID
 
 
 def guardar(info):
-  
+    FINAL = ''
+    conteo = 0;
+
+    total = len(info)
     print('inicio', datetime.datetime.now(), 'Total: ', len(info))
 
     for analytics in info:
+        conteo = conteo + 1
 
         date_time_obj = datetime.datetime.strptime(
             analytics['ga:date'], '%Y%m%d')
@@ -53,10 +57,19 @@ def guardar(info):
                  ",avgPageDownloadTime = " + analytics['ga:avgPageDownloadTime'] +
                  ",fecha_actualizacion = getdate() "
                  " where fecha = '" + pdate + "' END ")
-
+        FINAL = FINAL  +  QUERY;
+        if(total==1000):
+            if(conteo%100==0):
+                print('guardando 100')
+                cursor.execute(FINAL)
+                conn.commit()
+                FINAL = ''
+        else:
+            cursor.execute(QUERY)
+            conn.commit()
         
-        cursor.execute(QUERY)
-        conn.commit()
+        
+    #print(FINAL)
     print('fin', datetime.datetime.now())
     actualizarFecha(fechaGuardar);
 

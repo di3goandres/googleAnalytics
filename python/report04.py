@@ -1,4 +1,6 @@
-
+import sys
+import os
+import json
 import pyodbc
 import config
 
@@ -23,7 +25,10 @@ VIEW_ID = config.VIEW_ID
 
 
 def guardar(info):
+    FINAL = ''
     conteo = 0;
+
+    total = len(info)
     print('inicio', datetime.datetime.now(), 'Total: ', len(info))
     for analytics in info:
         conteo = conteo + 1
@@ -35,10 +40,15 @@ def guardar(info):
 
         keyword = analytics['ga:fullReferrer']
         keyword2 = analytics['ga:referralPath']
+        medium = analytics['ga:medium']
+
+
         ciudad =  analytics['ga:city']
         ciudad = ciudad.replace("'", "''")
-        QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_AllTrafficReferrals WHERE fecha ='" + pdate + "' " +
+        QUERY = ("   IF NOT EXISTS (SELECT * FROM ga_indicador_AllTrafficReferrals WHERE fecha ='" + pdate + "' " +
                  " and country = '" + analytics['ga:country'] + "' and city = '" + ciudad + "' " +
+                 " and medium = '" + analytics['ga:medium'] +    "' " + 
+
 
                  " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "') BEGIN " +
 
@@ -85,13 +95,28 @@ def guardar(info):
                  "',fecha_actualizacion = getdate() "
                  " where fecha = '" + pdate + "' "
                  " and country = '" + analytics['ga:country'] + "' and city = '" + ciudad + "' " +
+                 " and medium = '" + analytics['ga:medium'] +   "'" +
 
-                 " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "' END")
+                 " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "'  END " +
 
+                 " "
+
+                 
+                 )
+
+        FINAL = FINAL  +  QUERY;
+        if(total==1000):
+            if(conteo%100==0):
+                print('guardando 100')
+                cursor.execute(FINAL)
+                conn.commit()
+                FINAL = ''
+        else:
+            cursor.execute(QUERY)
+            conn.commit()
         
-        #print(QUERY)
-        cursor.execute(QUERY)
-        conn.commit()
+        
+    #print(FINAL)
     print('fin', datetime.datetime.now())
     actualizarFecha(fechaGuardar);
 
