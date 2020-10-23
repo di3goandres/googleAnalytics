@@ -98,7 +98,7 @@ def main():
     print("error")
   try:
     report04_Traffic(analytics)
-  except:
+  except :
     print("error")
   try:
     report06_Pages(analytics)

@@ -35,6 +35,8 @@ def guardar(info):
         keyword2 = analytics['ga:referralPath']
 
         QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_AllTrafficReferrals WHERE fecha ='" + pdate + "' " +
+                 " and country = '" + analytics['ga:country'] + "' and city = '" + analytics['ga:city'] + "' " +
+
                  " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "') BEGIN " +
 
                  "INSERT INTO ga_indicador_AllTrafficReferrals ([fecha] " +
@@ -45,6 +47,8 @@ def guardar(info):
                  ",[referralPath]" +
                  ",[medium]" +
                  ",[country]" +
+                 ",[city]" +
+
 
                  ",[users]" +
                  ",[sessions]" +
@@ -57,6 +61,8 @@ def guardar(info):
                  ",'"+analytics['ga:referralPath'] +
                  "','"+analytics['ga:medium'] +
                  "','"+analytics['ga:country'] +
+                 "','"+analytics['ga:city'] +
+
 
                  "', "+analytics['ga:users'] +
                  ", " + analytics['ga:sessions'] +
@@ -69,9 +75,14 @@ def guardar(info):
                  ",newUsers = " + analytics['ga:newUsers'] +
                  ",pageviews = " + analytics['ga:pageviews'] +
                  ",country = '" + analytics['ga:country'] +
+                 "',city = '" + analytics['ga:city'] +
+
+                 
 
                  "',fecha_actualizacion = getdate() "
                  " where fecha = '" + pdate + "' "
+                 " and country = '" + analytics['ga:country'] + "' and city = '" + analytics['ga:city'] + "' " +
+
                  " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "' END")
 
         
@@ -134,6 +145,8 @@ def reporte(analytics):
                         {'expression': 'ga:newUsers'},
                         {'expression': 'ga:users'},
                         {'expression': 'ga:pageviews'},
+                       
+
 
                     ],
                     'dimensions': [
@@ -142,6 +155,8 @@ def reporte(analytics):
                         {'name': "ga:fullReferrer"},
                         {'name': "ga:referralPath"},
                         {'name': "ga:country"},
+                        {'name': "ga:city"},
+
                    
 
 
