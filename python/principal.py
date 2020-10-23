@@ -86,24 +86,24 @@ def main():
   analytics = initialize_analyticsreporting()
   try:
      report_audience_01_05(analytics)
-  except:
-    print("error")
+  except Exception as e:
+      print(e)
   try:
     report02_Adquicision(analytics)
-  except:
-    print("error")
+  except Exception as e:
+      print(e)
   try:
     report03_OrganicSerches(analytics)
-  except:
-    print("error")
+  except Exception as e:
+      print(e)
   try:
     report04_Traffic(analytics)
-  except :
-    print("error")
+  except Exception as e:
+        print(e)
   try:
     report06_Pages(analytics)
-  except:
-    print("error")
+  except Exception as e:
+      print(e)
  
  
 

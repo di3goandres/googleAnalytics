@@ -23,9 +23,11 @@ VIEW_ID = config.VIEW_ID
 
 
 def guardar(info):
+    conteo = 0;
     print('inicio', datetime.datetime.now(), 'Total: ', len(info))
     for analytics in info:
-
+        conteo = conteo + 1
+        print(conteo, ' de ', len(info), 'con info: ' )
         date_time_obj = datetime.datetime.strptime(
             analytics['ga:date'], '%Y%m%d')
         pdate = date_time_obj.strftime('%Y-%m-%d')
@@ -33,9 +35,10 @@ def guardar(info):
 
         keyword = analytics['ga:fullReferrer']
         keyword2 = analytics['ga:referralPath']
-
+        ciudad =  analytics['ga:city']
+        ciudad = ciudad.replace("'", "''")
         QUERY = (" IF NOT EXISTS (SELECT * FROM ga_indicador_AllTrafficReferrals WHERE fecha ='" + pdate + "' " +
-                 " and country = '" + analytics['ga:country'] + "' and city = '" + analytics['ga:city'] + "' " +
+                 " and country = '" + analytics['ga:country'] + "' and city = '" + ciudad + "' " +
 
                  " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "') BEGIN " +
 
@@ -61,7 +64,7 @@ def guardar(info):
                  ",'"+analytics['ga:referralPath'] +
                  "','"+analytics['ga:medium'] +
                  "','"+analytics['ga:country'] +
-                 "','"+analytics['ga:city'] +
+                 "','"+ciudad +
 
 
                  "', "+analytics['ga:users'] +
@@ -75,18 +78,18 @@ def guardar(info):
                  ",newUsers = " + analytics['ga:newUsers'] +
                  ",pageviews = " + analytics['ga:pageviews'] +
                  ",country = '" + analytics['ga:country'] +
-                 "',city = '" + analytics['ga:city'] +
+                 "',city = '" + ciudad+
 
                  
 
                  "',fecha_actualizacion = getdate() "
                  " where fecha = '" + pdate + "' "
-                 " and country = '" + analytics['ga:country'] + "' and city = '" + analytics['ga:city'] + "' " +
+                 " and country = '" + analytics['ga:country'] + "' and city = '" + ciudad + "' " +
 
                  " and fullReferrer = '" + keyword + "' and referralPath = '" + keyword2 + "' END")
 
         
-        # print(QUERY)
+        #print(QUERY)
         cursor.execute(QUERY)
         conn.commit()
     print('fin', datetime.datetime.now())
